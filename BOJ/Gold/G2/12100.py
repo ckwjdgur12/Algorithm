@@ -104,36 +104,27 @@ def DOWN(brd):
     return brd
 
 
-cnt = 0
 def backTracking(depth, board):
     global result
-    global cnt
 
-    if depth == 5:
+    if depth == 5:  # 5번 실행했다면 최대값 찾아서 갱신하기
         maxSize = 0
         for i in range(N):
             maxSize = max(maxSize, max(board[i]))
         result = max(maxSize, result)
-        if result == 128:
-            for i in range(N):
-                print(board[i])
-            # print(seq)
-            print(cnt)
-            exit(0)
         return
     
     functions = [LEFT, RIGHT, UP, DOWN]
     for function in functions:
         brd = deepcopy(board)
         brd = function(brd)
-        cnt += 1
-        # seq.append(function)
         backTracking(depth+1, brd)
-        # del seq[-1]
 
-# seq = []
+
 backTracking(0, graph)
 print(result)
+
+
 
 '''
 for i in range(N):
