@@ -4,87 +4,57 @@ sys.stdin = open("BOJ/input.txt", "r")
 
 dx = [-1, -1, 0, 1, 1, 1, 0, -1]
 dy = [0, 1, 1, 1, 0, -1, -1, -1]
-dir = [1, 3, 5, 7, 0, 2, 4, 6]
+EVEN = 4
+ODD = 5
 
-def move_fire(fire_poses):
-    split_poses = set()
-    next_fire_poses = set()
-    infos = []
+def move_fire():
+    grid.clear()
+    
+    for x, y, m, s, d in fire_balls:
+        nx = (x + dx[d]*s) % N
+        ny = (y + dy[d]*s) % N
 
-    for x, y in fire_poses:
-        for m, s, d in grid[x][y]:
-            nx = x + dx[d]*s
-            ny = y + dy[d]*s
+        if nx == 0: nx = N
+        if ny == 0: ny = N
 
-            nx %= N
-            ny %= N
+        n_pos = (nx, ny)
+        if n_pos not in grid: grid[n_pos] = [1, m, s, d, 0, 0]
+        else:
+            grid[n_pos][0] += 1
+            grid[n_pos][1] += m
+            grid[n_pos][2] += s
 
-            if nx == 0: nx = N
-            if ny == 0: ny = N
-
-            infos.append((nx, ny, m, s, d))
-            next_fire_poses.add((nx, ny))
-
-        grid[x][y].clear()
-
-    for x, y, m, s, d in infos:
-        if grid[x][y]: split_poses.add((x, y))
-        grid[x][y].append([m, s, d])
-
-    return split_poses, next_fire_poses
-
-
-def split_fire(fire_poses):
-    for x, y, in fire_poses:
-        m_sum, s_sum, odd, even, cnt, k = 0, 0, 0, 0, 0, 0
-        for m, s, d in grid[x][y]:
-            m_sum += m
-            s_sum += s
-            cnt += 1
-
-            if d%2 == 0: even += 1
-            else: odd += 1
-
-        grid[x][y].clear()
-
-        if m_sum < 5: continue
-
-        n_m = m_sum // 5
-        n_s = s_sum // cnt
-
-        if even == 0 or odd == 0: k = 4
-
-        for i in range(4):
-            grid[x][y].append([n_m, n_s, dir[i+k]])
-            
+        if d%2 == 0: grid[n_pos][EVEN] += 1
+        else: grid[n_pos][ODD] += 1
     return
 
 
-def print_ans(fire_poses, debug):
-    if debug:
-        for g in grid:
-            print(g)
+def split_fire():
+    fire_balls.clear()
 
-    ans = 0
-    for pos in fire_poses:
-        for m, _, _ in grid[pos[0]][pos[1]]:
-            ans += m
-    print(ans)
+    for pos, (n, m, s, d, even, odd) in grid.items():
+        x, y = pos
+        if n == 1: fire_balls.append((x, y, m, s, d))
+        else:
+            if m < 5: continue
+
+            n_m = m//5
+            n_s = s//n
+            if even == 0 or odd == 0: d = [0, 2, 4, 6]
+            else: d = [1, 3, 5, 7]
+
+            for i in range(4): 
+                fire_balls.append((x, y, n_m, n_s, d[i]))
     return
 
 
 N, M, K = map(int, input().split())
 
-grid = list(list([] for _ in range(N+1)) for _ in range(N+1))
-fire_poses = set()
-
-for _ in range(M):
-    r, c, m, s, d = map(int, input().split())
-    grid[r][c].append([m, s, d])
-    fire_poses.add((r, c))
+grid = {}
+fire_balls = list(list(map(int, input().split())) for _ in range(M))
 
 for _ in range(K):
-    split_poses, fire_poses = move_fire(fire_poses)
-    split_fire(split_poses)
+    move_fire()
+    split_fire()
 
-print_ans(fire_poses, False)
+print(sum(fire_ball[2] for fire_ball in fire_balls))
