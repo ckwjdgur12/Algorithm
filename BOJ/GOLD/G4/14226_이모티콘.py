@@ -5,35 +5,34 @@ from collections import deque
 sys.stdin = open("BOJ/input.txt", "r")
 
 
-INF = 987654321
-
-
 def bfs():
 
     dq = deque()
-    dq.append((1, 1))
+    dq.append((1, 1, 1))
 
     while dq:
-        l, c = dq.popleft()
+        l, c, cnt = dq.popleft()
+        
+        if l == S:
+            print(cnt)
+            exit()
 
-        if l+c <= S and emtc[l+c][c] == INF:
-            emtc[l+c][c] = emtc[l][c] + 1
-            dq.append((l+c, c))
-        if l > 0 and emtc[l-1][c] == INF:
-            emtc[l-1][c] = emtc[l][c] + 1
-            dq.append((l-1, c))
-        if l != c and emtc[l][l] == INF:
-            emtc[l][l] = emtc[l][c] + 1
-            dq.append((l, l))
+        if l+c <= S and not visited[l+c][c]:
+            visited[l+c][c] = True
+            dq.append((l+c, c, cnt+1))
+        if l > 0 and not visited[l-1][c]:
+            visited[l-1][c] = True
+            dq.append((l-1, c, cnt+1))
+        if l != c and not visited[l][l]:
+            visited[l][l] = True
+            dq.append((l, l, cnt+1))
 
     return
 
 
 S = int(input())
 
-emtc = list([INF] * (S+1) for _ in range(S+1))
-emtc[1][1] = 1
+visited = list([False] * (S+1) for _ in range(S+1))
+visited[1][1] = True
 
 bfs()
-
-print(min(emtc[S]))
